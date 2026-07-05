@@ -1,0 +1,65 @@
+version: "3.9"
+
+services:
+  # ---------- Databases ----------
+  order-db:
+    image: mysql:8.0
+    container_name: order-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: order_db
+    ports:
+      - "3307:3306"     # host:container (3307 avoids conflict with local MySQL)
+    volumes:
+      - order-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  payment-db:
+    image: mysql:8.0
+    container_name: payment-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: payment_db
+    ports:
+      - "3308:3306"
+    volumes:
+      - payment-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ---------- Services ----------
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    depends_on:
+      order-db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql+pymysql://root:root@order-db:3306/order_db
+      PAYMENT_SERVICE_URL: http://payment-service:8000
+      SERVICE_NAME: order-service
+    ports:
+      - "8001:8000"
+
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    depends_on:
+      payment-db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql+pymysql://root:root@payment-db:3306/payment_db
+      SERVICE_NAME: payment-service
+    ports:
+      - "8002:8000"
+
+volumes:
+  order-db-data:
+  payment-db-data:
