@@ -1,7 +1,7 @@
 """Order Service - FastAPI entry point."""
 from fastapi import FastAPI
 
-from app.api.v1 import orders
+from app.api.v1.orders import orders
 from app.api.v1.items import item
 from app.core.config import settings
 
