@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     SERVICE_NAME: str = "order-service"
-    DATABASE_URL: str = "mysql+pymysql://root:root@localhost:3307/order_db"
+    DATABASE_URL: str = "mysql+pymysql://root:root@localhost:3306/order-db"
     PAYMENT_SERVICE_URL: str = "http://localhost:8002"
 
     model_config = SettingsConfigDict(

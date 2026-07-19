@@ -2,6 +2,7 @@
 from fastapi import FastAPI
 
 from app.api.v1 import orders
+from app.api.v1.items import item
 from app.core.config import settings
 
 # Create the FastAPI application instance
@@ -13,6 +14,7 @@ app = FastAPI(
 
 # Register routers — this attaches the order endpoints under /api/v1/orders
 app.include_router(orders.router, prefix="/api/v1/orders", tags=["orders"])
+app.include_router(item.router, prefix="/api/v1/items", tags=["items"])
 
 
 @app.get("/health", tags=["health"])
