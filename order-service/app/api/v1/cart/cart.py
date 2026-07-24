@@ -97,3 +97,29 @@ def clear_cart(user_id: int = Depends(get_current_user_id), db: Session = Depend
     cart.updated_at = datetime.utcnow()
     db.commit()
     return {"detail": "Cart cleared"}
+
+@router.post("/checkout")
+def checkout_cart(user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+    cart = get_or_create_active_cart(user_id, db)
+    if not cart:
+        raise HTTPException(404, "No active cart found")
+
+    items = db.query(CartItem).filter(CartItem.cart_id == cart.id).all()
+    if not items:
+        raise HTTPException(400, "Cart is empty")
+
+    total_amount = sum(ci.unit_price * ci.quantity for ci in items)
+
+    # Here you would typically create an order and process payment
+    # For simplicity, we'll just mark the cart as checked out
+    cart.status = "checked_out"
+    cart.updated_at = datetime.utcnow()
+    db.commit()
+
+    return {"detail": "Checkout successful", "total_amount": total_amount}
+
+@router.get("/view-all-items-cart")
+def view_all_items_in_cart(user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+    cart = get_or_create_active_cart(user_id, db)
+    items = db.query(CartItem).filter(CartItem.cart_id == cart.id).all()
+    return {"cart_id": cart.id, "status": cart.status, "items": items}
